@@ -7,6 +7,7 @@
 use core::cmp::{Eq, Ord, Ordering, PartialEq, PartialOrd};
 use core::hash::{Hash, Hasher};
 use core::mem::transmute;
+use core::ops::Deref;
 
 /// A wrapper for floats, that implements total equality and ordering
 /// and hashing.
@@ -53,6 +54,13 @@ macro_rules! float_ord_impl {
         impl Hash for FloatOrd<$f> {
             fn hash<H: Hasher>(&self, state: &mut H) {
                 self.convert().hash(state);
+            }
+        }
+        impl Deref for FloatOrd<$f> {
+            type Target = $f;
+
+            fn deref(&self) -> &Self::Target {
+                &self.0
             }
         }
     }
@@ -111,6 +119,8 @@ mod tests {
         assert!(FloatOrd(::core::f32::INFINITY) < FloatOrd(::core::f32::NAN));
         assert!(FloatOrd(-::core::f64::NAN) < FloatOrd(::core::f64::INFINITY));
         assert!(FloatOrd(-::core::f32::NAN) < FloatOrd(::core::f32::INFINITY));
+        let float1 = FloatOrd(1.0f64);
+        assert!(float1 == FloatOrd(*float1));
     }
 
     #[test]
