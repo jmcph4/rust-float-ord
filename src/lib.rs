@@ -35,6 +35,11 @@ macro_rules! float_ord_impl {
                 }
             }
         }
+        impl From<$f> for FloatOrd<$f> {
+            fn from(from: $f) -> Self {
+                FloatOrd(from)
+            }
+        }
         impl PartialEq for FloatOrd<$f> {
             fn eq(&self, other: &Self) -> bool {
                 self.convert() == other.convert()
@@ -135,6 +140,12 @@ mod tests {
                 assert!(v.windows(2).all(|w| (w[0] <= w[1]) == (FloatOrd(w[0]) <= FloatOrd(w[1]))));
             }
         }
+    }
+
+    #[test]
+    fn test_from() {
+        assert!(FloatOrd(3.145f64) == 3.145f64.into());
+        assert!(FloatOrd(3.145f64) != 2.718f64.into());
     }
 
     fn hash<F: Hash>(f: F) -> u64 {
