@@ -2,13 +2,12 @@
 //!
 //!    NaN | -Infinity | x < 0 | -0 | +0 | x > 0 | +Infinity | NaN
 
-#![no_std]
-
-use core::cmp::{Eq, Ord, Ordering, PartialEq, PartialOrd};
-use core::hash::{Hash, Hasher};
-use core::mem::transmute;
-use core::ops::Deref;
-use core::ops::{Add, Div, Mul, Rem, Sub};
+use std::cmp::{Eq, Ord, Ordering, PartialEq, PartialOrd};
+use std::fmt;
+use std::hash::{Hash, Hasher};
+use std::mem::transmute;
+use std::ops::Deref;
+use std::ops::{Add, Div, Mul, Rem, Sub};
 
 /// A wrapper for floats, that implements total equality and ordering
 /// and hashing.
@@ -104,6 +103,11 @@ macro_rules! float_ord_impl {
                 FloatOrd(self.0 % other.0)
             }
         }
+        impl fmt::Display for FloatOrd<$f> {
+            fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+                write!(f, "{}", self.0)
+            }
+        }
     };
 }
 
@@ -153,16 +157,16 @@ mod tests {
         assert!(FloatOrd(1.0f32) == FloatOrd(1.0f32));
         assert!(FloatOrd(0.0f64) > FloatOrd(-0.0f64));
         assert!(FloatOrd(0.0f32) > FloatOrd(-0.0f32));
-        assert!(FloatOrd(::core::f64::NAN) == FloatOrd(::core::f64::NAN));
-        assert!(FloatOrd(::core::f32::NAN) == FloatOrd(::core::f32::NAN));
-        assert!(FloatOrd(-::core::f64::NAN) < FloatOrd(::core::f64::NAN));
-        assert!(FloatOrd(-::core::f32::NAN) < FloatOrd(::core::f32::NAN));
-        assert!(FloatOrd(-::core::f64::INFINITY) < FloatOrd(::core::f64::INFINITY));
-        assert!(FloatOrd(-::core::f32::INFINITY) < FloatOrd(::core::f32::INFINITY));
-        assert!(FloatOrd(::core::f64::INFINITY) < FloatOrd(::core::f64::NAN));
-        assert!(FloatOrd(::core::f32::INFINITY) < FloatOrd(::core::f32::NAN));
-        assert!(FloatOrd(-::core::f64::NAN) < FloatOrd(::core::f64::INFINITY));
-        assert!(FloatOrd(-::core::f32::NAN) < FloatOrd(::core::f32::INFINITY));
+        assert!(FloatOrd(::std::f64::NAN) == FloatOrd(::std::f64::NAN));
+        assert!(FloatOrd(::std::f32::NAN) == FloatOrd(::std::f32::NAN));
+        assert!(FloatOrd(-::std::f64::NAN) < FloatOrd(::std::f64::NAN));
+        assert!(FloatOrd(-::std::f32::NAN) < FloatOrd(::std::f32::NAN));
+        assert!(FloatOrd(-::std::f64::INFINITY) < FloatOrd(::std::f64::INFINITY));
+        assert!(FloatOrd(-::std::f32::INFINITY) < FloatOrd(::std::f32::INFINITY));
+        assert!(FloatOrd(::std::f64::INFINITY) < FloatOrd(::std::f64::NAN));
+        assert!(FloatOrd(::std::f32::INFINITY) < FloatOrd(::std::f32::NAN));
+        assert!(FloatOrd(-::std::f64::NAN) < FloatOrd(::std::f64::INFINITY));
+        assert!(FloatOrd(-::std::f32::NAN) < FloatOrd(::std::f32::INFINITY));
         let float1 = FloatOrd(1.0f64);
         assert!(float1 == FloatOrd(*float1));
     }
@@ -203,20 +207,20 @@ mod tests {
         assert_eq!(hash(FloatOrd(-0.0f64)), hash(FloatOrd(-0.0f64)));
         assert_eq!(hash(FloatOrd(0.0f32)), hash(FloatOrd(0.0f32)));
         assert_ne!(
-            hash(FloatOrd(::core::f64::NAN)),
-            hash(FloatOrd(-::core::f64::NAN))
+            hash(FloatOrd(::std::f64::NAN)),
+            hash(FloatOrd(-::std::f64::NAN))
         );
         assert_ne!(
-            hash(FloatOrd(::core::f32::NAN)),
-            hash(FloatOrd(-::core::f32::NAN))
+            hash(FloatOrd(::std::f32::NAN)),
+            hash(FloatOrd(-::std::f32::NAN))
         );
         assert_eq!(
-            hash(FloatOrd(::core::f64::NAN)),
-            hash(FloatOrd(::core::f64::NAN))
+            hash(FloatOrd(::std::f64::NAN)),
+            hash(FloatOrd(::std::f64::NAN))
         );
         assert_eq!(
-            hash(FloatOrd(-::core::f32::NAN)),
-            hash(FloatOrd(-::core::f32::NAN))
+            hash(FloatOrd(-::std::f32::NAN)),
+            hash(FloatOrd(-::std::f32::NAN))
         );
     }
 
@@ -250,7 +254,7 @@ mod tests {
 
     #[test]
     fn test_sort_nan() {
-        let nan = ::core::f64::NAN;
+        let nan = ::std::f64::NAN;
         let mut v = [-1.0, 5.0, 0.0, -0.0, nan, 1.5, nan, 3.7];
         super::sort(&mut v);
         assert!(v[0] == -1.0);
@@ -269,31 +273,31 @@ mod tests {
 
         assert!(FloatOrd::wrap(0.0f32) > FloatOrd(-0.0f32));
         assert!(FloatOrd(0.0f32) > FloatOrd::wrap(-0.0f32));
-        assert!(FloatOrd::wrap(::core::f64::NAN) == FloatOrd(::core::f64::NAN));
-        assert!(FloatOrd(::core::f64::NAN) == FloatOrd::wrap(::core::f64::NAN));
-        assert!(FloatOrd::wrap(::core::f32::NAN) == FloatOrd(::core::f32::NAN));
-        assert!(FloatOrd(::core::f32::NAN) == FloatOrd::wrap(::core::f32::NAN));
-        assert!(FloatOrd::wrap(-::core::f64::NAN) < FloatOrd(::core::f64::NAN));
-        assert!(FloatOrd(-::core::f64::NAN) < FloatOrd::wrap(::core::f64::NAN));
-        assert!(FloatOrd::wrap(-::core::f32::NAN) < FloatOrd(::core::f32::NAN));
-        assert!(FloatOrd(-::core::f32::NAN) < FloatOrd::wrap(::core::f32::NAN));
-        assert!(FloatOrd::wrap(-::core::f64::INFINITY) < FloatOrd(::core::f64::INFINITY));
-        assert!(FloatOrd(-::core::f64::INFINITY) < FloatOrd::wrap(::core::f64::INFINITY));
-        assert!(FloatOrd::wrap(-::core::f32::INFINITY) < FloatOrd(::core::f32::INFINITY));
-        assert!(FloatOrd(-::core::f32::INFINITY) < FloatOrd::wrap(::core::f32::INFINITY));
-        assert!(FloatOrd::wrap(::core::f64::INFINITY) < FloatOrd(::core::f64::NAN));
-        assert!(FloatOrd(::core::f64::INFINITY) < FloatOrd::wrap(::core::f64::NAN));
-        assert!(FloatOrd::wrap(::core::f32::INFINITY) < FloatOrd(::core::f32::NAN));
-        assert!(FloatOrd(::core::f32::INFINITY) < FloatOrd::wrap(::core::f32::NAN));
-        assert!(FloatOrd::wrap(-::core::f64::NAN) < FloatOrd(::core::f64::INFINITY));
-        assert!(FloatOrd(-::core::f64::NAN) < FloatOrd::wrap(::core::f64::INFINITY));
-        assert!(FloatOrd::wrap(-::core::f32::NAN) < FloatOrd(::core::f32::INFINITY));
-        assert!(FloatOrd(-::core::f32::NAN) < FloatOrd::wrap(::core::f32::INFINITY));
+        assert!(FloatOrd::wrap(::std::f64::NAN) == FloatOrd(::std::f64::NAN));
+        assert!(FloatOrd(::std::f64::NAN) == FloatOrd::wrap(::std::f64::NAN));
+        assert!(FloatOrd::wrap(::std::f32::NAN) == FloatOrd(::std::f32::NAN));
+        assert!(FloatOrd(::std::f32::NAN) == FloatOrd::wrap(::std::f32::NAN));
+        assert!(FloatOrd::wrap(-::std::f64::NAN) < FloatOrd(::std::f64::NAN));
+        assert!(FloatOrd(-::std::f64::NAN) < FloatOrd::wrap(::std::f64::NAN));
+        assert!(FloatOrd::wrap(-::std::f32::NAN) < FloatOrd(::std::f32::NAN));
+        assert!(FloatOrd(-::std::f32::NAN) < FloatOrd::wrap(::std::f32::NAN));
+        assert!(FloatOrd::wrap(-::std::f64::INFINITY) < FloatOrd(::std::f64::INFINITY));
+        assert!(FloatOrd(-::std::f64::INFINITY) < FloatOrd::wrap(::std::f64::INFINITY));
+        assert!(FloatOrd::wrap(-::std::f32::INFINITY) < FloatOrd(::std::f32::INFINITY));
+        assert!(FloatOrd(-::std::f32::INFINITY) < FloatOrd::wrap(::std::f32::INFINITY));
+        assert!(FloatOrd::wrap(::std::f64::INFINITY) < FloatOrd(::std::f64::NAN));
+        assert!(FloatOrd(::std::f64::INFINITY) < FloatOrd::wrap(::std::f64::NAN));
+        assert!(FloatOrd::wrap(::std::f32::INFINITY) < FloatOrd(::std::f32::NAN));
+        assert!(FloatOrd(::std::f32::INFINITY) < FloatOrd::wrap(::std::f32::NAN));
+        assert!(FloatOrd::wrap(-::std::f64::NAN) < FloatOrd(::std::f64::INFINITY));
+        assert!(FloatOrd(-::std::f64::NAN) < FloatOrd::wrap(::std::f64::INFINITY));
+        assert!(FloatOrd::wrap(-::std::f32::NAN) < FloatOrd(::std::f32::INFINITY));
+        assert!(FloatOrd(-::std::f32::NAN) < FloatOrd::wrap(::std::f32::INFINITY));
     }
 
     #[test]
     fn test_sort_bytemuck() {
-        let nan = ::core::f64::NAN;
+        let nan = ::std::f64::NAN;
         let mut v = [-1.0, 5.0, 0.0, -0.0, nan, 1.5, nan, 3.7];
         let floatord_slice: &mut [FloatOrd<f64>] = bytemuck::cast_slice_mut(&mut v);
         floatord_slice.sort_unstable();
