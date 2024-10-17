@@ -2,13 +2,13 @@
 //!
 //!    NaN | -Infinity | x < 0 | -0 | +0 | x > 0 | +Infinity | NaN
 
+use num::traits::Zero;
 use std::cmp::{Eq, Ord, Ordering, PartialEq, PartialOrd};
 use std::fmt;
 use std::hash::{Hash, Hasher};
 use std::mem::transmute;
 use std::ops::Deref;
 use std::ops::{Add, Div, Mul, Rem, Sub};
-use num::traits::Zero;
 
 /// A wrapper for floats, that implements total equality and ordering
 /// and hashing.
@@ -104,11 +104,11 @@ macro_rules! float_ord_impl {
                 FloatOrd(self.0 % other.0)
             }
         }
-<<<<<<< Updated upstream
         impl fmt::Display for FloatOrd<$f> {
             fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
                 write!(f, "{}", self.0)
-=======
+            }
+        }
         impl Zero for FloatOrd<$f> {
             fn zero() -> Self {
                 Self(0.0)
@@ -116,7 +116,6 @@ macro_rules! float_ord_impl {
 
             fn is_zero(&self) -> bool {
                 self.0 == 0.0
->>>>>>> Stashed changes
             }
         }
     };
