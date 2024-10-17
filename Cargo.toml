@@ -20,6 +20,9 @@ bytemuck = { version = "1.12.3", features = ["derive", "extern_crate_std", "min_
 [badges]
 travis-ci = { repository = "notriddle/rust-float-ord" }
 
+[dependencies]
+num = "0.4.3"
+
 [dependencies.bytemuck]
 optional = true
 version = "1.12.3"
