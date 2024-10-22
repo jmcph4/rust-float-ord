@@ -2,7 +2,7 @@
 //!
 //!    NaN | -Infinity | x < 0 | -0 | +0 | x > 0 | +Infinity | NaN
 
-use num::traits::{Bounded, Zero};
+use num::traits::{Bounded, One, Zero};
 use std::cmp::{Eq, Ord, Ordering, PartialEq, PartialOrd};
 use std::fmt;
 use std::hash::{Hash, Hasher};
@@ -116,6 +116,11 @@ macro_rules! float_ord_impl {
 
             fn is_zero(&self) -> bool {
                 self.0 == 0.0
+            }
+        }
+        impl One for FloatOrd<$f> {
+            fn one() -> Self {
+                Self(1.0)
             }
         }
         impl Bounded for FloatOrd<$f> {
